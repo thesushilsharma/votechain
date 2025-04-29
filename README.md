@@ -13,3 +13,11 @@ Built on blockchain technology, VoteChain ensures transparency, immutability, an
 Powered by Ethereum-compatible networks (Base) for low fees and fast transactions.
 
 Empowering transparent decisions for communities worldwide.
+
+## Contributing
+
+To contribute to this project, please submit any issues or pull requests on the GitHub repository.
+
+## License
+
+This project is licensed under the MIT License. Please look at the [LICENSE](LICENSE) file for details.
