@@ -36,7 +36,13 @@ By leveraging Ethereum-compatible networks like **Base**, VoteChain ensures low 
 - Easily extendable for:  
   - DAO voting systems  
   - Public opinion forums  
-  - Community governance platforms  
+  - Community governance platforms
+ 
+---
+
+## Known Issues
+- None
+
 
 ---
 
