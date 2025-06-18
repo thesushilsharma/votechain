@@ -26,10 +26,10 @@ By leveraging Ethereum-compatible networks like **Base**, VoteChain ensures low 
 
 ### 3. 💬 On-Chain Comments  
 - Engage in public discussions tied to proposals  
-- All comments permanently stored on-chain  
+- All comments are permanently stored on-chain  
 
 ### 4. ⛓️ Immutable Audit Trail  
-- Every action cryptographically recorded  
+- Every action is cryptographically recorded  
 - Zero risk of tampering or centralized manipulation  
 
 ### 5. 🧱 Modular Architecture  
@@ -40,9 +40,17 @@ By leveraging Ethereum-compatible networks like **Base**, VoteChain ensures low 
  
 ---
 
+## Technologies Used
+
+- [ ] Tailwind CSS
+- [ ] Next Js
+- [ ] Typescript
+- [ ] Zod
+
+---
+
 ## Known Issues
 - None
-
 
 ---
 
