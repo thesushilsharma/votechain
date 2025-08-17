@@ -47,6 +47,7 @@ By leveraging Ethereum-compatible networks like **Base**, VoteChain ensures low 
 - Typescript
 - Zod
 - Blockchain - Ethereum Base Chain (tenderly sandbox)
+- ConnectKit connecting dApps to wallets (wagmi.sh, viem.sh)
 
 ---
 
