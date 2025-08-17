@@ -40,12 +40,13 @@ By leveraging Ethereum-compatible networks like **Base**, VoteChain ensures low 
  
 ---
 
-## Technologies Used
+## Tech Stack
 
-- [ ] Tailwind CSS
-- [ ] Next Js
-- [ ] Typescript
-- [ ] Zod
+- Tailwind CSS
+- Next Js
+- Typescript
+- Zod
+- Blockchain - Ethereum Base Chain (tenderly sandbox)
 
 ---
 
