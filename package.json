@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.85.5",
-    "next": "15.4.6",
+    "next": "15.5.4",
     "pnpm": "^10.15.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
     "viem": "~2.34.0",
     "wagmi": "^2.16.4"
   },
@@ -21,11 +21,17 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "19.1.13",
+    "@types/react-dom": "19.1.9",
     "eslint": "^9",
-    "eslint-config-next": "15.4.6",
+    "eslint-config-next": "15.5.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.1.13",
+      "@types/react-dom": "19.1.9"
+    }
   }
 }
