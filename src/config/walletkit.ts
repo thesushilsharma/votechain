@@ -20,7 +20,9 @@ export const initWalletKit = async () => {
       core,
       metadata: {
         name: 'VoteChain',
-        description: 'Transparent, Decentralized Voting on the Blockchain'
+        description: 'Transparent, Decentralized Voting on the Blockchain',
+        url: '',
+        icons: [''],
       },
     })
 
