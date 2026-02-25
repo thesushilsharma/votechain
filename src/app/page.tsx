@@ -1,15 +1,10 @@
-import NewTopicForm from "@/components/NewTopicForm";
-import TopicList from "@/components/TopicList";
-import { getTopicsServer } from "@/app/action/getTopic.action";
+import HomeClient from "@/components/HomeClient";
+import Providers from "@/context/coinbase-provider";
 
-export default async function Home() {
+export default function Home() {
   return (
-    <main className="container mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Topics</h1>
-
-      <NewTopicForm />
-
-      <TopicList initialData={await getTopicsServer()} />
-    </main>
+    <Providers>
+      <HomeClient />
+    </Providers>
   );
 }

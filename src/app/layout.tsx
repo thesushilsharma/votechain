@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { QueryProvider } from "@/context/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VoteChain: Community Topic Voting",
+  title: "🗳️ VoteChain - Transparent Decentralized Voting",
   description:
-    "VoteChain lets you post topics and crowdsource decisions with upvotes and downvotes. Simple, fast, and modern.",
+    "VoteChain is a decentralized application built on blockchain technology for transparent community voting, upvoting/downvoting ideas, and scheduling voting periods.",
 };
 
 export default function RootLayout({
@@ -29,9 +28,23 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
+        <div className="min-h-screen bg-background">
+          <header className="border-b">
+            <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🗳️</span>
+                  <h1 className="text-xl font-bold">VoteChain</h1>
+                </div>
+                <nav className="flex gap-4">
+                  <a href="/" className="text-sm hover:text-primary">Home</a>
+                  <a href="/wallet-demo" className="text-sm hover:text-primary">Wallet Demo</a>
+                </nav>
+              </div>
+            </div>
+          </header>
           <main>{children}</main>
-        </QueryProvider>
+        </div>
       </body>
     </html>
   );
