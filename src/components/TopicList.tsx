@@ -1,23 +1,67 @@
 "use client";
 
-import { type Topic, useTopicsQuery } from "@/hooks/useTopicsQuery";
+import { TopicCard } from "@/components/TopicCard";
+import { Topic } from "@/types/topic";
+import { useTopicsQuery } from "@/hooks/useTopicsQuery";
 
-export default function TopicList({ initialData }: { initialData?: Topic[] }) {
+interface TopicListProps {
+  initialData?: Topic[];
+  onVote: (topicId: string, type: "up" | "down") => void;
+  onComment: (topicId: string) => void;
+}
+
+export default function TopicList({
+  initialData,
+  onVote,
+  onComment,
+}: TopicListProps) {
   const { data, isLoading, error } = useTopicsQuery(initialData);
 
-  if (isLoading) return <div>Loading…</div>;
-  if (error) return <div className="text-red-500">Failed to load topics</div>;
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-32 bg-muted rounded-lg"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">Failed to load topics</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Please try again later
+        </p>
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-6xl mb-4">🗳️</div>
+        <h3 className="text-lg font-semibold mb-2">No topics yet</h3>
+        <p className="text-muted-foreground">
+          Be the first to create a topic for the community!
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <ul className="space-y-3 mt-4">
-      {data?.map((t) => (
-        <li key={t.id} className="border rounded p-3 flex items-center justify-between">
-          <span className="font-medium">{t.title}</span>
-          <span className="text-sm">
-            👍 {t.upvotes} | 👎 {t.downvotes}
-          </span>
-        </li>
+    <div className="space-y-4">
+      {data.map((topic) => (
+        <TopicCard
+          key={topic.id}
+          topic={topic}
+          onVote={onVote}
+          onComment={onComment}
+        />
       ))}
-    </ul>
+    </div>
   );
 }
