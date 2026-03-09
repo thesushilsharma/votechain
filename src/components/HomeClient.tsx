@@ -37,17 +37,24 @@
      }
    }
 
-   const handleVote = async (topicId: string, type: 'up' | 'down') => {
+  const handleVote = async (topicId: string, type: 'up' | 'down') => {
      if (!account) return
 
      try {
-       await voteTopic({
+      const res = await voteTopic({
          topicId,
          type,
          voter: account,
        })
+      if (res?.receiptId) {
+        alert(`Vote recorded.\nReceipt: ${res.receiptId.slice(0, 20)}...`)
+      } else {
+        alert('Vote recorded.')
+      }
+      setRefreshKey(prev => prev + 1)
      } catch (error) {
-       console.error('Failed to vote:', error)
+      const msg = (error as Error)?.message ?? 'Failed to vote'
+      alert(msg)
      }
    }
 

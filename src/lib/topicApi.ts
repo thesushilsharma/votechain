@@ -30,7 +30,16 @@
    voter: string;
  };
  
- export async function voteTopic(input: VoteTopicInput): Promise<void> {
+export type VoteResponse = {
+  success: boolean;
+  topicId: string;
+  type: Vote["type"];
+  voter: string;
+  timestamp: string;
+  receiptId?: string;
+};
+
+export async function voteTopic(input: VoteTopicInput): Promise<VoteResponse> {
    const response = await fetch(`/api/topics/${input.topicId}/vote`, {
      method: "POST",
      headers: {
@@ -45,6 +54,8 @@
    if (!response.ok) {
      throw new Error("Failed to vote on topic");
    }
+
+  return response.json();
  }
  
  export type CreateCommentInput = {
