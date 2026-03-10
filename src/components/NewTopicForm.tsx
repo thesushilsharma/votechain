@@ -13,6 +13,7 @@ interface NewTopicFormProps {
     description: string
     startTime?: Date
     endTime?: Date
+    restrictToSelf?: boolean
   }) => void
 }
 
@@ -24,6 +25,7 @@ export default function NewTopicForm({ onSubmit }: NewTopicFormProps) {
   const [endTime, setEndTime] = useState('')
   const [isScheduled, setIsScheduled] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [restrictToSelf, setRestrictToSelf] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +38,7 @@ export default function NewTopicForm({ onSubmit }: NewTopicFormProps) {
         description: description.trim(),
         startTime: startTime ? new Date(startTime) : undefined,
         endTime: endTime ? new Date(endTime) : undefined,
+        restrictToSelf,
       })
       
       // Reset form
@@ -132,6 +135,19 @@ export default function NewTopicForm({ onSubmit }: NewTopicFormProps) {
               </div>
             </div>
           )}
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="restrict-self"
+              checked={restrictToSelf}
+              onChange={(e) => setRestrictToSelf(e.target.checked)}
+              className="rounded"
+            />
+            <label htmlFor="restrict-self" className="text-sm">
+              Restrict voting to my wallet only (allowlist)
+            </label>
+          </div>
 
           <Button type="submit" disabled={isSubmitting || !title.trim()} className="w-full">
             {isSubmitting ? 'Creating...' : 'Create Topic'}

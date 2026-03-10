@@ -17,19 +17,27 @@
    const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
    const { data: topics } = useTopicsQuery()
    const account = isSignedIn ? evmAddress : null
+  const [toast, setToast] = useState<string | null>(null)
+  const [snapshotRoot, setSnapshotRoot] = useState<string | null>(null)
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }
 
    const handleCreateTopic = async (data: {
      title: string
      description: string
      startTime?: Date
      endTime?: Date
+    restrictToSelf?: boolean
    }) => {
      if (!account) return
 
      try {
-       await createTopic({
+      await createTopic({
          ...data,
          creator: account,
+        allow: data.restrictToSelf ? [account] : undefined,
        })
        setRefreshKey(prev => prev + 1)
      } catch (error) {
@@ -47,14 +55,14 @@
          voter: account,
        })
       if (res?.receiptId) {
-        alert(`Vote recorded.\nReceipt: ${res.receiptId.slice(0, 20)}...`)
+        showToast(`Vote recorded. Receipt: ${res.receiptId.slice(0, 20)}...`)
       } else {
-        alert('Vote recorded.')
+        showToast('Vote recorded.')
       }
       setRefreshKey(prev => prev + 1)
      } catch (error) {
       const msg = (error as Error)?.message ?? 'Failed to vote'
-      alert(msg)
+      showToast(msg)
      }
    }
 
@@ -64,6 +72,18 @@
        setSelectedTopic(topic)
      }
    }
+
+  const handleViewSnapshot = async (topicId: string) => {
+    try {
+      const res = await fetch(`/api/topics/${topicId}/snapshot`)
+      if (!res.ok) throw new Error('Failed to fetch snapshot')
+      const data = await res.json()
+      setSnapshotRoot(data?.root ?? '')
+      showToast(`Snapshot root: ${(data?.root ?? '').slice(0, 20)}...`)
+    } catch (e) {
+      showToast((e as Error)?.message ?? 'Snapshot error')
+    }
+  }
 
    const handleSubmitComment = async (content: string) => {
      if (!account || !selectedTopic) return
@@ -100,6 +120,7 @@
              key={refreshKey}
              onVote={handleVote}
              onComment={handleComment}
+            onSnapshot={handleViewSnapshot}
            />
          </div>
        </div>
@@ -150,6 +171,11 @@
            onSubmitComment={handleSubmitComment}
          />
        )}
+      {toast && (
+        <div className="fixed bottom-4 right-4 bg-muted text-foreground px-4 py-2 rounded shadow">
+          {toast}
+        </div>
+      )}
      </div>
    )
  }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { Topic } from '@/types/topic'
-import { getTopics, addTopic } from '@/lib/topicsStore'
+import { getTopics, addTopic, addAllowedVoters } from '@/lib/topicsStore'
 
 export async function GET() {
   return NextResponse.json(getTopics())
@@ -9,7 +9,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { title, description, startTime, endTime, creator } = body
+    const { title, description, startTime, endTime, creator, allow } = body
 
     if (!title || !creator) {
       return NextResponse.json(
@@ -34,6 +34,9 @@ export async function POST(request: Request) {
     }
 
     addTopic(newTopic)
+    if (Array.isArray(allow) && allow.length > 0) {
+      addAllowedVoters(newTopic.id, allow)
+    }
     return NextResponse.json(newTopic, { status: 201 })
   } catch (error) {
     return NextResponse.json(

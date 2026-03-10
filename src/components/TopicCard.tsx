@@ -23,9 +23,10 @@ interface TopicCardProps {
   topic: Topic;
   onVote: (topicId: string, type: "up" | "down") => void;
   onComment: (topicId: string) => void;
+  onSnapshot: (topicId: string) => void;
 }
 
-export function TopicCard({ topic, onVote, onComment }: TopicCardProps) {
+export function TopicCard({ topic, onVote, onComment, onSnapshot }: TopicCardProps) {
   const { isSignedIn } = useIsSignedIn();
 
   const getStatusIcon = () => {
@@ -107,6 +108,14 @@ export function TopicCard({ topic, onVote, onComment }: TopicCardProps) {
             >
               <MessageCircle className="h-4 w-4" />
               {topic.comments.length}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSnapshot(topic.id)}
+              className="flex items-center gap-1"
+            >
+              Snapshot
             </Button>
           </div>
           <div className="text-xs text-muted-foreground">

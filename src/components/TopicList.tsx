@@ -8,12 +8,14 @@ interface TopicListProps {
   initialData?: Topic[];
   onVote: (topicId: string, type: "up" | "down") => void;
   onComment: (topicId: string) => void;
+  onSnapshot: (topicId: string) => void;
 }
 
 export default function TopicList({
   initialData,
   onVote,
   onComment,
+  onSnapshot,
 }: TopicListProps) {
   const { data, isLoading, error } = useTopicsQuery(initialData);
 
@@ -60,6 +62,7 @@ export default function TopicList({
           topic={topic}
           onVote={onVote}
           onComment={onComment}
+          onSnapshot={onSnapshot}
         />
       ))}
     </div>

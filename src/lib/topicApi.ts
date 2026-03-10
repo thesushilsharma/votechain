@@ -1,11 +1,12 @@
  import type { Topic, Comment, Vote } from "@/types/topic";
  
- export type CreateTopicInput = {
+export type CreateTopicInput = {
    title: string;
    description: string;
    startTime?: Date;
    endTime?: Date;
    creator: string;
+  allow?: string[];
  };
  
  export async function createTopic(input: CreateTopicInput): Promise<Topic> {
@@ -14,7 +15,7 @@
      headers: {
        "Content-Type": "application/json",
      },
-     body: JSON.stringify(input),
+    body: JSON.stringify(input),
    });
  
    if (!response.ok) {
