@@ -18,7 +18,8 @@
    const { data: topics } = useTopicsQuery()
    const account = isSignedIn ? evmAddress : null
   const [toast, setToast] = useState<string | null>(null)
-  const [snapshotRoot, setSnapshotRoot] = useState<string | null>(null)
+  const [snapshotRoots, setSnapshotRoots] = useState<Record<string, string>>({})
+  const [lastReceipts, setLastReceipts] = useState<Record<string, string>>({})
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
@@ -56,6 +57,7 @@
        })
       if (res?.receiptId) {
         showToast(`Vote recorded. Receipt: ${res.receiptId.slice(0, 20)}...`)
+        setLastReceipts(prev => ({ ...prev, [topicId]: res.receiptId ?? '' }))
       } else {
         showToast('Vote recorded.')
       }
@@ -78,7 +80,7 @@
       const res = await fetch(`/api/topics/${topicId}/snapshot`)
       if (!res.ok) throw new Error('Failed to fetch snapshot')
       const data = await res.json()
-      setSnapshotRoot(data?.root ?? '')
+      setSnapshotRoots(prev => ({ ...prev, [topicId]: data?.root ?? '' }))
       showToast(`Snapshot root: ${(data?.root ?? '').slice(0, 20)}...`)
     } catch (e) {
       showToast((e as Error)?.message ?? 'Snapshot error')
@@ -121,6 +123,8 @@
              onVote={handleVote}
              onComment={handleComment}
             onSnapshot={handleViewSnapshot}
+            snapshotRoots={snapshotRoots}
+            lastReceipts={lastReceipts}
            />
          </div>
        </div>

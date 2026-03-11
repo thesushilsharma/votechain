@@ -18,16 +18,23 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEvmAddress, useIsSignedIn } from "@coinbase/cdp-hooks";
+import { useState } from "react";
 
 interface TopicCardProps {
   topic: Topic;
   onVote: (topicId: string, type: "up" | "down") => void;
   onComment: (topicId: string) => void;
   onSnapshot: (topicId: string) => void;
+  snapshotRoot?: string;
+  lastReceipt?: string;
 }
 
-export function TopicCard({ topic, onVote, onComment, onSnapshot }: TopicCardProps) {
+export function TopicCard({ topic, onVote, onComment, onSnapshot, snapshotRoot, lastReceipt }: TopicCardProps) {
   const { isSignedIn } = useIsSignedIn();
+  const { evmAddress } = useEvmAddress();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [allowInput, setAllowInput] = useState("");
+  const [allowMsg, setAllowMsg] = useState("");
 
   const getStatusIcon = () => {
     switch (topic.status) {
@@ -117,7 +124,87 @@ export function TopicCard({ topic, onVote, onComment, onSnapshot }: TopicCardPro
             >
               Snapshot
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDetailsOpen((v) => !v)}
+              className="flex items-center gap-1"
+            >
+              Details
+            </Button>
           </div>
+          {detailsOpen && (
+            <div className="mt-3 space-y-3">
+              <div className="flex items-center gap-3">
+                {lastReceipt && (
+                  <div className="text-xs bg-muted px-2 py-1 rounded flex items-center gap-2">
+                    <span>Receipt:</span>
+                    <code>{lastReceipt.slice(0, 10)}...</code>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(lastReceipt)}
+                      className="underline"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
+                {snapshotRoot && (
+                  <div className="text-xs bg-muted px-2 py-1 rounded flex items-center gap-2">
+                    <span>Root:</span>
+                    <code>{snapshotRoot.slice(0, 10)}...</code>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard.writeText(snapshotRoot)}
+                      className="underline"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
+              </div>
+              {isSignedIn &&
+                evmAddress &&
+                evmAddress.toLowerCase() === topic.creator.toLowerCase() && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add voter address"
+                      value={allowInput}
+                      onChange={(e) => setAllowInput(e.target.value)}
+                      className="flex w-64 rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          setAllowMsg("");
+                          const res = await fetch(`/api/topics/${topic.id}/allowlist`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ allow: [allowInput] }),
+                          });
+                          if (!res.ok) {
+                            const j = await res.json().catch(() => ({}));
+                            throw new Error(j?.error ?? "Failed to add voter");
+                          }
+                          setAllowMsg("Added");
+                          setAllowInput("");
+                          setTimeout(() => setAllowMsg(""), 2000);
+                        } catch (e) {
+                          setAllowMsg((e as Error)?.message ?? "Error");
+                          setTimeout(() => setAllowMsg(""), 3000);
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                    {allowMsg && <span className="text-xs text-muted-foreground">{allowMsg}</span>}
+                  </div>
+                )}
+            </div>
+          )}
           <div className="text-xs text-muted-foreground">
             by {topic.creator.slice(0, 6)}...{topic.creator.slice(-4)}
           </div>
