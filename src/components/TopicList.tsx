@@ -11,6 +11,9 @@ interface TopicListProps {
   onSnapshot: (topicId: string) => void;
   snapshotRoots: Record<string, string>;
   lastReceipts: Record<string, string>;
+  snapshotCounts: Record<string, number>;
+  detailsOpen: Record<string, boolean>;
+  onToggleDetails: (topicId: string) => void;
 }
 
 export default function TopicList({
@@ -20,6 +23,9 @@ export default function TopicList({
   onSnapshot,
   snapshotRoots,
   lastReceipts,
+  snapshotCounts,
+  detailsOpen,
+  onToggleDetails,
 }: TopicListProps) {
   const { data, isLoading, error } = useTopicsQuery(initialData);
 
@@ -69,6 +75,9 @@ export default function TopicList({
           onSnapshot={onSnapshot}
           snapshotRoot={snapshotRoots[topic.id]}
           lastReceipt={lastReceipts[topic.id]}
+          snapshotCount={snapshotCounts[topic.id]}
+          detailsOpen={!!detailsOpen[topic.id]}
+          onToggleDetails={() => onToggleDetails(topic.id)}
         />
       ))}
     </div>

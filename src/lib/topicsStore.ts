@@ -86,6 +86,11 @@
    allowlists.set(topicId, set);
  }
  
+export function getAllowedVoters(topicId: string) {
+  const set = allowlists.get(topicId);
+  return set ? Array.from(set.values()) : [];
+}
+
  export function isEligible(topicId: string, voter: string) {
    const set = allowlists.get(topicId);
    if (!set || set.size === 0) return true; // open vote when no allowlist

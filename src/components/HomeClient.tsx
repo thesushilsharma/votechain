@@ -19,10 +19,27 @@
    const account = isSignedIn ? evmAddress : null
   const [toast, setToast] = useState<string | null>(null)
   const [snapshotRoots, setSnapshotRoots] = useState<Record<string, string>>({})
+  const [snapshotCounts, setSnapshotCounts] = useState<Record<string, number>>({})
   const [lastReceipts, setLastReceipts] = useState<Record<string, string>>({})
+  const [detailsOpen, setDetailsOpen] = useState<Record<string, boolean>>({})
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
+  }
+  const loadDetailsState = () => {
+    try {
+      const raw = localStorage.getItem('votechain.detailsOpen') || '{}'
+      const parsed = JSON.parse(raw)
+      setDetailsOpen(parsed || {})
+    } catch {}
+  }
+  const saveDetailsState = (next: Record<string, boolean>) => {
+    try {
+      localStorage.setItem('votechain.detailsOpen', JSON.stringify(next))
+    } catch {}
+  }
+  if (typeof window !== 'undefined' && Object.keys(detailsOpen).length === 0) {
+    loadDetailsState()
   }
 
    const handleCreateTopic = async (data: {
@@ -81,10 +98,16 @@
       if (!res.ok) throw new Error('Failed to fetch snapshot')
       const data = await res.json()
       setSnapshotRoots(prev => ({ ...prev, [topicId]: data?.root ?? '' }))
+      setSnapshotCounts(prev => ({ ...prev, [topicId]: Array.isArray(data?.leaves) ? data.leaves.length : 0 }))
       showToast(`Snapshot root: ${(data?.root ?? '').slice(0, 20)}...`)
     } catch (e) {
       showToast((e as Error)?.message ?? 'Snapshot error')
     }
+  }
+  const handleToggleDetails = (topicId: string) => {
+    const next = { ...detailsOpen, [topicId]: !detailsOpen[topicId] }
+    setDetailsOpen(next)
+    saveDetailsState(next)
   }
 
    const handleSubmitComment = async (content: string) => {
@@ -125,6 +148,9 @@
             onSnapshot={handleViewSnapshot}
             snapshotRoots={snapshotRoots}
             lastReceipts={lastReceipts}
+            snapshotCounts={snapshotCounts}
+            detailsOpen={detailsOpen}
+            onToggleDetails={handleToggleDetails}
            />
          </div>
        </div>

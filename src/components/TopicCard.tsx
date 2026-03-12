@@ -27,14 +27,17 @@ interface TopicCardProps {
   onSnapshot: (topicId: string) => void;
   snapshotRoot?: string;
   lastReceipt?: string;
+  snapshotCount?: number;
+  detailsOpen: boolean;
+  onToggleDetails: () => void;
 }
 
-export function TopicCard({ topic, onVote, onComment, onSnapshot, snapshotRoot, lastReceipt }: TopicCardProps) {
+export function TopicCard({ topic, onVote, onComment, onSnapshot, snapshotRoot, lastReceipt, snapshotCount, detailsOpen, onToggleDetails }: TopicCardProps) {
   const { isSignedIn } = useIsSignedIn();
   const { evmAddress } = useEvmAddress();
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [allowInput, setAllowInput] = useState("");
   const [allowMsg, setAllowMsg] = useState("");
+  const [allowList, setAllowList] = useState<string[]>([]);
 
   const getStatusIcon = () => {
     switch (topic.status) {
@@ -127,7 +130,7 @@ export function TopicCard({ topic, onVote, onComment, onSnapshot, snapshotRoot, 
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setDetailsOpen((v) => !v)}
+              onClick={onToggleDetails}
               className="flex items-center gap-1"
             >
               Details
@@ -160,47 +163,92 @@ export function TopicCard({ topic, onVote, onComment, onSnapshot, snapshotRoot, 
                     >
                       Copy
                     </button>
+                    {typeof snapshotCount === "number" && (
+                      <span>Leaves: {snapshotCount}</span>
+                    )}
                   </div>
                 )}
               </div>
               {isSignedIn &&
                 evmAddress &&
                 evmAddress.toLowerCase() === topic.creator.toLowerCase() && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add voter address"
-                      value={allowInput}
-                      onChange={(e) => setAllowInput(e.target.value)}
-                      className="flex w-64 rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={async () => {
-                        try {
-                          setAllowMsg("");
-                          const res = await fetch(`/api/topics/${topic.id}/allowlist`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ allow: [allowInput] }),
-                          });
-                          if (!res.ok) {
-                            const j = await res.json().catch(() => ({}));
-                            throw new Error(j?.error ?? "Failed to add voter");
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Add voter address"
+                        value={allowInput}
+                        onChange={(e) => setAllowInput(e.target.value)}
+                        className="flex w-64 rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            setAllowMsg("");
+                            const res = await fetch(`/api/topics/${topic.id}/allowlist`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ allow: [allowInput] }),
+                            });
+                            if (!res.ok) {
+                              const j = await res.json().catch(() => ({}));
+                              throw new Error(j?.error ?? "Failed to add voter");
+                            }
+                            setAllowMsg("Added");
+                            setAllowInput("");
+                            setTimeout(() => setAllowMsg(""), 2000);
+                          } catch (e) {
+                            setAllowMsg((e as Error)?.message ?? "Error");
+                            setTimeout(() => setAllowMsg(""), 3000);
                           }
-                          setAllowMsg("Added");
-                          setAllowInput("");
-                          setTimeout(() => setAllowMsg(""), 2000);
-                        } catch (e) {
-                          setAllowMsg((e as Error)?.message ?? "Error");
-                          setTimeout(() => setAllowMsg(""), 3000);
-                        }
-                      }}
-                    >
-                      Add
-                    </Button>
-                    {allowMsg && <span className="text-xs text-muted-foreground">{allowMsg}</span>}
+                        }}
+                      >
+                        Add
+                      </Button>
+                      {allowMsg && <span className="text-xs text-muted-foreground">{allowMsg}</span>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch(`/api/topics/${topic.id}/allowlist`);
+                            if (!res.ok) throw new Error("Failed to fetch allowlist");
+                            const data = await res.json();
+                            setAllowList(Array.isArray(data?.allow) ? data.allow : []);
+                          } catch (e) {
+                            setAllowMsg((e as Error)?.message ?? "Error");
+                            setTimeout(() => setAllowMsg(""), 3000);
+                          }
+                        }}
+                      >
+                        Refresh allowlist
+                      </Button>
+                      {allowList.length > 0 && (
+                        <span className="text-xs text-muted-foreground">Count: {allowList.length}</span>
+                      )}
+                    </div>
+                    {allowList.length > 0 && (
+                      <div className="text-xs bg-muted rounded px-3 py-2 max-h-24 overflow-auto">
+                        <ul className="space-y-1">
+                          {allowList.map((addr) => (
+                            <li key={addr} className="flex items-center gap-2">
+                              <code>{addr.slice(0, 10)}...</code>
+                              <button
+                                type="button"
+                                onClick={() => navigator.clipboard.writeText(addr)}
+                                className="underline"
+                              >
+                                Copy
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
             </div>
