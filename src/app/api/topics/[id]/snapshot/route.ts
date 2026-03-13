@@ -1,4 +1,4 @@
- import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
  import { getSnapshot, getTopicById } from "@/lib/topicsStore";
  
  export async function GET(

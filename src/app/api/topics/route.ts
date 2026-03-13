@@ -1,6 +1,7 @@
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
+import { addAllowedVoters, addTopic, getTopics } from '@/lib/topicsStore'
 import type { Topic } from '@/types/topic'
-import { getTopics, addTopic, addAllowedVoters } from '@/lib/topicsStore'
 
 export async function GET() {
   return NextResponse.json(getTopics())
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
     if (Array.isArray(allow) && allow.length > 0) {
       addAllowedVoters(newTopic.id, allow)
     }
+    revalidatePath('/', 'page')
     return NextResponse.json(newTopic, { status: 201 })
   } catch (error) {
     return NextResponse.json(

@@ -80,9 +80,34 @@
    return topics.find((t) => t.id === id);
  }
  
+export function addCommentToTopic(
+  topicId: string,
+  comment: {
+    id: string;
+    topicId: string;
+    author: string;
+    content: string;
+    createdAt: string | Date;
+    upvotes: number;
+    downvotes: number;
+  },
+) {
+  const topic = getTopicById(topicId);
+  if (!topic) return;
+  topic.comments.push({
+    ...comment,
+    createdAt:
+      typeof comment.createdAt === "string"
+        ? new Date(comment.createdAt)
+        : comment.createdAt,
+  });
+  topic.updatedAt = new Date();
+}
  export function addAllowedVoters(topicId: string, voters: string[]) {
    const set = allowlists.get(topicId) ?? new Set<string>();
-   voters.forEach((v) => set.add(v.toLowerCase()));
+  for (const v of voters) {
+    set.add(v.toLowerCase());
+  }
    allowlists.set(topicId, set);
  }
  

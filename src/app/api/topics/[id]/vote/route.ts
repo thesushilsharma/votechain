@@ -1,5 +1,6 @@
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
-import { getTopicById, isEligible, hasVoted, recordVote } from '@/lib/topicsStore'
+import { getTopicById, hasVoted, isEligible, recordVote } from '@/lib/topicsStore'
 
 export async function POST(
   request: Request,
@@ -30,6 +31,7 @@ export async function POST(
     }
 
     const rec = recordVote(topicId, voter, type)
+    revalidatePath('/', 'page')
     return NextResponse.json({
       success: true,
       topicId,

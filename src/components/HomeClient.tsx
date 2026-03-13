@@ -7,21 +7,23 @@
  import { Card, CardContent } from '@/components/ui/card'
  import type { Topic } from '@/types/topic'
  import { useTopicsQuery } from '@/hooks/useTopicsQuery'
+ import { useMutation, useQueryClient } from '@tanstack/react-query'
  import { useEvmAddress, useIsSignedIn } from '@coinbase/cdp-hooks'
  import { createComment, createTopic, voteTopic } from '@/lib/topicApi'
 
- export default function HomeClient() {
+export default function HomeClient({ initialTopics }: { initialTopics?: Topic[] }) {
    const { evmAddress } = useEvmAddress()
    const { isSignedIn } = useIsSignedIn()
    const [refreshKey, setRefreshKey] = useState(0)
    const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-   const { data: topics } = useTopicsQuery()
+  const { data: topics } = useTopicsQuery(initialTopics)
    const account = isSignedIn ? evmAddress : null
   const [toast, setToast] = useState<string | null>(null)
   const [snapshotRoots, setSnapshotRoots] = useState<Record<string, string>>({})
   const [snapshotCounts, setSnapshotCounts] = useState<Record<string, number>>({})
   const [lastReceipts, setLastReceipts] = useState<Record<string, string>>({})
   const [detailsOpen, setDetailsOpen] = useState<Record<string, boolean>>({})
+  const queryClient = useQueryClient()
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
@@ -63,27 +65,50 @@
      }
    }
 
-  const handleVote = async (topicId: string, type: 'up' | 'down') => {
-     if (!account) return
-
-     try {
-      const res = await voteTopic({
-         topicId,
-         type,
-         voter: account,
-       })
+  const voteMutation = useMutation({
+    mutationFn: async ({ topicId, type }: { topicId: string; type: 'up' | 'down' }) => {
+      if (!account) throw new Error('Not signed in')
+      return voteTopic({ topicId, type, voter: account })
+    },
+    onMutate: async ({ topicId, type }) => {
+      await queryClient.cancelQueries({ queryKey: ['topics'] })
+      const previous = queryClient.getQueryData<Topic[]>(['topics'])
+      if (previous) {
+        const next = previous.map(t =>
+          t.id === topicId
+            ? {
+                ...t,
+                upvotes: type === 'up' ? t.upvotes + 1 : t.upvotes,
+                downvotes: type === 'down' ? t.downvotes + 1 : t.downvotes,
+              }
+            : t,
+        )
+        queryClient.setQueryData(['topics'], next)
+      }
+      return { previous }
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previous) {
+        queryClient.setQueryData(['topics'], ctx.previous)
+      }
+      showToast(((_err as Error)?.message) || 'Failed to vote')
+    },
+    onSuccess: (res, { topicId }) => {
       if (res?.receiptId) {
         showToast(`Vote recorded. Receipt: ${res.receiptId.slice(0, 20)}...`)
         setLastReceipts(prev => ({ ...prev, [topicId]: res.receiptId ?? '' }))
       } else {
         showToast('Vote recorded.')
       }
-      setRefreshKey(prev => prev + 1)
-     } catch (error) {
-      const msg = (error as Error)?.message ?? 'Failed to vote'
-      showToast(msg)
-     }
-   }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['topics'] })
+    },
+  })
+
+  const handleVote = async (topicId: string, type: 'up' | 'down') => {
+    await voteMutation.mutateAsync({ topicId, type })
+  }
 
    const handleComment = (topicId: string) => {
      const topic = topics?.find(t => t.id === topicId)
@@ -151,6 +176,7 @@
             snapshotCounts={snapshotCounts}
             detailsOpen={detailsOpen}
             onToggleDetails={handleToggleDetails}
+            initialData={topics}
            />
          </div>
        </div>

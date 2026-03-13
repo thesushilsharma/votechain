@@ -1,4 +1,6 @@
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
+import { addCommentToTopic } from '@/lib/topicsStore'
 
 export async function POST(
   request: Request,
@@ -25,6 +27,8 @@ export async function POST(
       downvotes: 0,
     }
 
+    addCommentToTopic(topicId, newComment)
+    revalidatePath('/', 'page')
     return NextResponse.json(newComment, { status: 201 })
   } catch (error) {
     console.error('Comment creation error:', error)
