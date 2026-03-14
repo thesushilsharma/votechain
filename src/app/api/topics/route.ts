@@ -2,22 +2,26 @@ import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { addAllowedVoters, addTopic, getTopics } from '@/lib/topicsStore'
 import type { Topic } from '@/types/topic'
+import { ok, err } from '@/lib/api'
+import { validateCreateTopic } from '@/lib/validation'
+import { ipFromHeaders, rateLimit } from '@/lib/rateLimit'
 
 export async function GET() {
-  return NextResponse.json(getTopics())
+  return NextResponse.json(ok(getTopics()))
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { title, description, startTime, endTime, creator, allow } = body
-
-    if (!title || !creator) {
-      return NextResponse.json(
-        { error: 'Title and creator are required' },
-        { status: 400 }
-      )
+    const rl = rateLimit(`${ipFromHeaders(request.headers)}:topics:create`, 20, 60_000)
+    if (!rl.allowed) {
+      return NextResponse.json(err('RATE_LIMITED', 'Too many requests'), { status: 429 })
     }
+    const body = await request.json()
+    const v = validateCreateTopic(body)
+    if (!v.ok) {
+      return NextResponse.json(err('BAD_REQUEST', v.message, v.details), { status: 400 })
+    }
+    const { title, description, startTime, endTime, creator, allow } = v.data
 
     const newTopic: Topic = {
       id: Date.now().toString(),
@@ -26,8 +30,8 @@ export async function POST(request: Request) {
       upvotes: 0,
       downvotes: 0,
       comments: [],
-      startTime: startTime ? new Date(startTime) : undefined,
-      endTime: endTime ? new Date(endTime) : undefined,
+      startTime,
+      endTime,
       status: startTime ? 'draft' : 'active',
       creator,
       createdAt: new Date(),
@@ -39,11 +43,8 @@ export async function POST(request: Request) {
       addAllowedVoters(newTopic.id, allow)
     }
     revalidatePath('/', 'page')
-    return NextResponse.json(newTopic, { status: 201 })
+    return NextResponse.json(ok(newTopic), { status: 201 })
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create topic' },
-      { status: 500 }
-    )
+    return NextResponse.json(err('INTERNAL', 'Failed to create topic'), { status: 500 })
   }
 }
