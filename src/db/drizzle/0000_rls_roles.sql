@@ -14,6 +14,13 @@ begin
   end if;
 end $$;
 
+-- IMPORTANT:
+-- Your DB login role (the one in DATABASE_URL) must be granted these roles
+-- for `SET LOCAL ROLE votechain_*` to work:
+--   grant votechain_anon to <db_login_role>;
+--   grant votechain_user to <db_login_role>;
+--   grant votechain_service to <db_login_role>;
+
 -- Enable RLS (policies are defined in schema.ts; this ensures it's on even if applied manually)
 alter table if exists topics enable row level security;
 alter table if exists topic_comments enable row level security;
